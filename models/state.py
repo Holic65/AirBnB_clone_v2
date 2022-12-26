@@ -8,7 +8,7 @@ from models.city import City
 
 
 class State(BaseModel, Base):
-    """ State class """
+    """ State class definition"""
     __tablename__ = 'states'
     name = Column(
         String(128), nullable=False
