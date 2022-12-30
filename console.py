@@ -120,14 +120,12 @@ class HBNBCommand(cmd.Cmd):
             create <class name> <key 1>=<value 1> <key 2>=<value 2>...
             creates a new class with different attribues and id
         """
-        try:
-            if not line:
-                raise SyntaxError()
-            my_list = line.split(" ")
-
+        if len(line) != 0:
+            split_line = line.split()
+            class_name = split_line[0]
             kwargs = {}
-            for i in range(1, len(my_list)):
-                key, value = tuple(my_list[i].split("="))
+            for i in range(1, len(split_line)):
+                key, value = tuple(split_line[i].split("="))
                 if value[0] == '"':
                     value = value.strip('"').replace("_", " ")
                 else:
@@ -136,20 +134,17 @@ class HBNBCommand(cmd.Cmd):
                     except (SyntaxError, NameError):
                         continue
                 kwargs[key] = value
-            if my_list[0] not in self.__classes:
-                raise NameError
+            if class_name not in HBNBCommand.classes:
+                print("** class doesn't exist **")
             if kwargs == {}:
-                obj = eval(my_list[0])()
+                obj = eval(class_name)()
             else:
-                obj = eval(my_list[0])(**kwargs)
+                obj = eval(class_name)(**kwargs)
                 storage.new(obj)
             print(obj.id)
             obj.save()
-
-        except SyntaxError:
+        else:
             print("** class name missing **")
-        except NameError:
-            print("** class doesn't exist **")
 
 
     def help_create(self):
