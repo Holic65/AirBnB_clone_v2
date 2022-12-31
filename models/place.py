@@ -15,7 +15,7 @@ place_amenity = Table(
         'place_id',
         String(60),
         ForeignKey('places.id'),
-        nullable=Fasle,
+        nullable=False,
         primary_key=True
     ),
     Column(
