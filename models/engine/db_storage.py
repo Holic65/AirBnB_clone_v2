@@ -63,7 +63,14 @@ class DBStorage():
 
     def new(self, obj):
         """ a function that adds object to db """
-        self.__session.add(obj)
+        if obj is not None:
+            try:
+                self.__session.add(obj)
+                self.__session.flush()
+                self.__session.refresh(obj)
+            except Exception as ex:
+                self.__session.rollback()
+                raise ex
 
     def save(self):
         """ commit all changes of the current databse session"""
@@ -72,7 +79,10 @@ class DBStorage():
     def delete(self, obj=None):
         """ a function thaht deletes obj from db session"""
         if obj is not None:
-            self.__session.delete(obj)
+            self.__session.query(type(obj)).filter(
+                type(obj).id == obj.id).delete(
+                synchronize_session=False
+            )
 
     def reload(self):
         """ creates all class in dband inherit from Base"""
