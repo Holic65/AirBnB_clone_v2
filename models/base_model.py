@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 
 Base = declarative_base()
+time = "%Y-%m-%dT%H:%M:%S.%f"
 
 
 class BaseModel:
@@ -18,27 +19,18 @@ class BaseModel:
 
     def __init__(self, *args, **kwargs):
         """Instatntiates a new model"""
-        if not kwargs:
-            from models import storage
+        if kwargs:
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.now()
+            for k, v in kwargs.items():
+                if k == "created_at" or k == "updated_at":
+                    v = datetime.strptime(v, time)
+                if k != "__class__":
+                    setattr(self, k, v)
+        else:
             self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
-        else:
-            for key, value in kwargs.items():
-                if key == '__class__':
-                    continue
-                elif key == 'created_at':
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-                elif key == 'updated_at':
-                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-
-                if 'id' not in kwargs.keys():
-                    self.id = str(uuid.uuid4())
-                if 'created_at' not in kwargs.keys():
-                    self.created_at = datetime.utcnow()
-                if 'updated_at' not in kwargs.keys():
-                    self.updated_at = datetime.utcnow()
-                setattr(self, key, value)
 
     def __str__(self):
         """Returns a string representation of the instance"""
@@ -54,14 +46,14 @@ class BaseModel:
 
     def to_dict(self):
         """Convert instance into dict format"""
-        dictionary = {}
-        for key, value in self.__dict__.items():
-            if key != '_sa_instance_state':
-                if isinstance(value, datetime):
-                    dictionary[key] = value.isoformat()
-                else:
-                    dictionary[key] = value
+        dictionary = self.__dict__.copy()
+        if "created_at" in dictionary:
+            dictionary["created_at"] = dictionary["created_at"].strftime(time)
+        if "updated_at" in dictionary:
+            dictionary["updated_at"] = dictionary["updated_at"].strftime(time)
         dictionary['__class__'] = self.__class__.__name__
+        if "_sa_instance_state" in dictionary:
+            del dictionary["_sa_instance_state"]
         return dictionary
 
     def delete(self):
