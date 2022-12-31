@@ -13,6 +13,10 @@ from models.amenity import Amenity
 from models.review import Review
 
 
+classes = {"Amenity": Amenity, "City": City,
+           "Place": Place, "Review": Review, "State": State, "User": User}
+
+
 class DBStorage():
     """DBStorage class definition"""
     __engine = None
@@ -35,20 +39,27 @@ class DBStorage():
 
     def all(self, cls=None):
         """ a function that queries db session depending on cls """
-        classes = (User, State, City, Amenity, Place, Review)
-        objects = dict()
-        if cls is None:
-            for class_type in classes:
-                query = self.__session.query(class_type)
-                for obj in query.all():
-                    obj_key = '{}.{}'.format(obj.__class__.__name__, obj.id)
-                    objects[obj_key] = obj
+        if cls:
+            if isinstance(cls, str):
+                objs = self.__session.query(classes[cls])
+            else:
+                for key, value in classes.items():
+                    if value == cls:
+                        objs = self.__session.query(classes[key])
+                        break
         else:
-            query = self.__session.query(cls)
-            for obj in query.all():
-                obj_key = '{}.{}'.format(obj.__class__.__name__, obj.id)
-                objects[obj_key] = obj
-        return objects
+            objs = self.__session.query(State).all()
+            objs += self.__session.query(City).all()
+            objs += self.__session.query(User).all()
+            objs += self.__session.query(Place).all()
+            objs += self.__session.query(Amenity).all()
+            objs += self.__session.query(Review).all()
+
+        a_dict = {}
+        for obj in objs:
+            k = '{}.{}'.format(type(obj).__name__, obj.id)
+            a_dict[k] = obj
+        return a_dict
 
     def new(self, obj):
         """ a function that adds object to db """
