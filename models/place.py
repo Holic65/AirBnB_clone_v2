@@ -20,25 +20,3 @@ class Place(BaseModel, Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     amenity_ids = []
-    reviews = relationship(
-        'Review',
-        cascade="all, delete, delete-orphan",
-        backref='place'
-    ) if os.getenv('HBNB_TYPE_STORAGE') == 'db' else None
-    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
-        amenities = relationship(
-            'Amenity',
-            secondary=place_amenity,
-            viewonly=False,
-            backref='place_amenities'
-        )
-    else:
-        @property
-        def amenities(self):
-            """Returns the amenities of this Place"""
-            from models import storage
-            amenities_of_place = []
-            for value in storage.all(Amenity).values():
-                if value.id in self.amenity_ids:
-                    amenities_of_place.append(value)
-            return amenities_of_place
