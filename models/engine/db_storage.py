@@ -63,14 +63,11 @@ class DBStorage():
 
     def new(self, obj):
         """ a function that adds object to db """
-        if obj is not None:
-            try:
+        if hasattr(obj, '_sa_session_id'):
+            if obj._sa_session_id is None:
                 self.__session.add(obj)
-                self.__session.flush()
-                self.__session.refresh(obj)
-            except Exception as ex:
-                self.__session.rollback()
-                raise ex
+        else:
+            pass
 
     def save(self):
         """ commit all changes of the current databse session"""
