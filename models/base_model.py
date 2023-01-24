@@ -1,24 +1,42 @@
 #!/usr/bin/python3
-"""This module defines a base class for all models in our hbnb clone"""
-import uuid
-from datetime import datetime
-import os
-from sqlalchemy import Column, String, DATETIME
+import models
+import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, String, Integer, DateTime
+import uuid
+from os import getenv
+from datetime import datetime
+"""This module defines a base class for all models in our hbnb clone"""
+"""
+base_model
+has class BaseModel defining all
+common atributes and methods for other classes
+"""
 
-
-Base = declarative_base()
 time = "%Y-%m-%dT%H:%M:%S.%f"
+if getenv("HBNB_TYPE_STORAGE") == "db":
+    Base = declarative_base()
+else:
+    Base = object
 
 
 class BaseModel:
-    """A base class for all hbnb models"""
-    id = Column(String(60), nullable=False, primary_key=True, unique=True)
-    created_at = Column(DATETIME, nullable=False, default=datetime.utcnow())
-    updated_at = Column(DATETIME, nullable=False, default=datetime.utcnow())
+    """public instance attributes:
+       id, created_at, updated_at
+    """
+    if getenv("HBNB_TYPE_STORAGE") == "db":
+        id = Column(String(60), primary_key=True)
+        created_at = Column(DateTime, nullable=False,
+                            default=datetime.utcnow())
+        updated_at = Column(DateTime, nullable=False,
+                            default=datetime.utcnow())
 
     def __init__(self, *args, **kwargs):
-        """Instatntiates a new model"""
+        """Initialize
+        id uses uuid.uuid4(). Regenerates a unique id for each BaseModel.
+        updated_at -> datetime will be updated everytime an object is changed.
+        *args and **kwargs are constructors
+        """
         if kwargs:
             self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
@@ -31,18 +49,29 @@ class BaseModel:
             self.id = str(uuid.uuid4())
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
+            """ models.storage.new(self)"""
 
     def __str__(self):
-        """Returns a string representation of the instance"""
-        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
-        return '[{}] ({}) {}'.format(cls, self.id, self.__dict__)
+        """Returns a string representation of BaseModel class
+           Prints: "(class name) (self.id) (self.__dict__)"
+       """
+        return ("[{}] ({}) {}".format(self.__class__.__name__,
+                self.id, self.__dict__))
+
+    def __repr__(self):
+        """
+        Returns the string representation of BaseModel
+        calls __str__()
+        """
+        return (self.__str__())
 
     def save(self):
-        """Updates updated_at with current time when instance is changed"""
-        from models import storage
-        self.updated_at = datetime.now()
-        storage.new(self)
-        storage.save()
+        """Updates updated_at with current time when instance is changed
+            calls save(self) method of storage
+        """
+        self.updated_at = datetime.utcnow()
+        models.storage.new(self)
+        models.storage.save()
 
     def to_dict(self):
         """Convert instance into dict format"""
@@ -51,12 +80,13 @@ class BaseModel:
             dictionary["created_at"] = dictionary["created_at"].strftime(time)
         if "updated_at" in dictionary:
             dictionary["updated_at"] = dictionary["updated_at"].strftime(time)
-        dictionary['__class__'] = self.__class__.__name__
+        dictionary["__class__"] = self.__class__.__name__
         if "_sa_instance_state" in dictionary:
             del dictionary["_sa_instance_state"]
         return dictionary
 
     def delete(self):
-        """ a script that deletes currnt instance from the storage"""
-        from models import storage
-        storage.delete(self)
+        """
+        deletes instance from storage
+        """
+        models.storage.delete(self)

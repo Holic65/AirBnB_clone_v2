@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""This module instantiates an object of class FileStorage"""
+"""This module instantiates an object of class FileStorage or DBStorage"""
 from os import getenv
 HBNB_TYPE_STORAGE = getenv('HBNB_TYPE_STORAGE')
 
