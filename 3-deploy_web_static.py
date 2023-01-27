@@ -16,7 +16,7 @@ def do_pack():
         local('tar -cvzf {}.tgz web_static'.format(filename))
         return filename
     except:
-        reurn None
+        return None
 
 
 def do_deploy(archive_path):
