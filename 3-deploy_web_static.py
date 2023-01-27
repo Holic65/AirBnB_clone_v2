@@ -12,8 +12,8 @@ def do_pack():
         if not isdir('versions'):
             local('mkdir versions')
         date = datetime.now().strftime('%Y%m%d%H%M%S')
-        filename = 'versions/web_static_{}'.format(date)
-        local('tar -cvzf {}.tgz web_static'.format(filename))
+        filename = 'versions/web_static_{}.tgz'.format(date)
+        local('tar -cvzf {} web_static'.format(filename))
         return filename
     except:
         return None
@@ -21,7 +21,7 @@ def do_pack():
 
 def do_deploy(archive_path):
     ''' a script that distributes archive to servers '''
-    if not exists(archive_path):
+    if exists(archive_path) is False:
         return False
 
     try:
@@ -43,7 +43,7 @@ def do_deploy(archive_path):
 
 def deploy():
     ''' a script that creates and distributes archive to servers '''
-    archive_name = do_pack()
-    if archive_name is None:
+    archive_path = do_pack()
+    if archive_path is None:
         return False
-    return do_deploy(archive_name)
+    return do_deploy(archive_path)
