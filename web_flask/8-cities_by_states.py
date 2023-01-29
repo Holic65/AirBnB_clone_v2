@@ -1,15 +1,24 @@
 #!/usr/bin/python3
-''' a script thats sets up a flask application '''
+'''A simple Flask web application.
+'''
 from flask import Flask, render_template
+
 from models import storage
 from models.state import State
+
+
 app = Flask(__name__)
+'''The Flask application instance.'''
+app.url_map.strict_slashes = False
 
 
-@app.route('/cities_by_states', strict_slashes=False)
-def state_cities():
+@app.route('/cities_by_states')
+def cities_by_states():
+    '''The cities_by_states page.'''
     all_states = list(storage.all(State).values())
     all_states.sort(key=lambda x: x.name)
+    for state in all_states:
+        state.cities.sort(key=lambda x: x.name)
     ctxt = {
         'states': all_states
     }
@@ -18,6 +27,7 @@ def state_cities():
 
 @app.teardown_appcontext
 def flask_teardown(exc):
+    '''The Flask app/request context end event listener.'''
     storage.close()
 
 
